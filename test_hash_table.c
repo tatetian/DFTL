@@ -43,6 +43,20 @@ int main(void)
 	res = hash_table_update(ht, 789, 0);
 	BUG_ON("update to non-existant element successful", res == 0);
 
+	res = hash_table_remove(ht, 789);
+	BUG_ON("remove non-existant element successful", res == 0);
+
+	res = hash_table_remove(ht, 8);
+	BUG_ON("removal failure", res != 0);
+	res = hash_table_remove(ht, 128);
+	BUG_ON("removal failure", res != 0);
+	res = hash_table_remove(ht, 787998);
+	BUG_ON("removal failure", res != 0);
+	res = hash_table_remove(ht, 0);
+	BUG_ON("removal failure", res != 0);
+
+	BUG_ON("hash table is not empty", ht->size != 0);
+
 	free(buckets);
 	free(pool);
 }
