@@ -3,11 +3,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "jasmine.h"
 
 #define BUG_ON(MESSAGE, COND) do {\
 	if (COND) {\
 		printf(MESSAGE);\
-		exit(1);\
+		led_blink();\
+		while(1);\
 	}\
 } while(0);
 

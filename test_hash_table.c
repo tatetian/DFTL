@@ -7,16 +7,17 @@ int main(void)
 	hash_table _ht;
 	hash_table* ht = &_ht;
 	UINT32 capacity = 4;
+	UINT8  node_size = sizeof(hash_node);
+	UINT32 buffer_size = capacity * node_size;
+	UINT8* node_buffer = malloc(buffer_size);
 	UINT32 num_buckets = 16;
-	hashnode** buckets = malloc(sizeof(hashnode*) * num_buckets);
-	UINT32 pool_size = capacity;
-	hashnode* pool = malloc(sizeof(hashnode) * pool_size);
+	hash_node** buckets = malloc(sizeof(hash_node*) * num_buckets);
 
 	UINT32 val; 
 	BOOL32 res;
 
-	hash_table_init(ht, capacity, buckets, num_buckets, 
-			pool, pool_size);
+	hash_table_init(ht, capacity, node_size, node_buffer, buffer_size, 
+			buckets, num_buckets);
 	
 	res = hash_table_get(ht, 0, &val);
 	BUG_ON("return non-existent element", res == 0);
@@ -58,5 +59,5 @@ int main(void)
 	BUG_ON("hash table is not empty", ht->size != 0);
 
 	free(buckets);
-	free(pool);
+	free(node_buffer);
 }

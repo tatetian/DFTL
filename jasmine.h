@@ -4,7 +4,7 @@
 /* ========================================================================= *
  * Size Constants 
  * ========================================================================= */
-
+#define DRAM_BASE		0
 #define	DRAM_SIZE		16384	// 16KB	
 #define	NUM_BANKS_MAX		2	
 #define NUM_BANKS		2
@@ -30,6 +30,8 @@
 // 4 byte ECC parity is appended to the end of every 128 byte data
 // The amount of DRAM space that you can use is reduced.
 #define	DRAM_ECC_UNIT			128
+
+#define NUM_VBLKS			(VBLKS_PER_BANK * NUM_BANKS)
 
 #define NUM_PSECTORS			SECTORS_PER_BANK * NUM_BANKS
 #define NUM_LSECTORS			(4 + NUM_PSECTORS * 7 / 8)
@@ -71,7 +73,26 @@ typedef unsigned long long	UINT64;
 #define	INVALID16	((UINT16) -1)
 #define	INVALID32	((UINT32) -1)
 
+/* scan list */
+#define SCAN_LIST_SIZE				BYTES_PER_PAGE
+#define SCAN_LIST_ITEMS				((SCAN_LIST_SIZE / sizeof(UINT16)) - 1)
+
+typedef struct {
+	UINT16	num_entries;
+	UINT16	list[SCAN_LIST_ITEMS];
+} scan_list_t;
+
+/* ========================================================================= *
+ * Macro helper functions 
+ * ========================================================================= */
+
 #define MIN(X, Y)				((X) > (Y) ? (Y) : (X))
 #define MAX(X, Y)				((X) > (Y) ? (X) : (Y))
 
+#define led(state)
+#define led_blink()	exit(1)
+#define disable_irq() 	
+#define flash_clear_irq()
+
+#define uart_print(message)	printf("%s\n", message);
 #endif

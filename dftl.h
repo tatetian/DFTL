@@ -4,9 +4,23 @@
 #include "jasmine.h"
 #include "mem.h"
 
+#define COUNT_BUCKETS(TOTAL, BUCKET_SIZE) \
+	( ((TOTAL) + (BUCKET_SIZE) - 1) / (BUCKET_SIZE) )
+
 /* ========================================================================= *
  * DRAM Segmentation
  * ========================================================================= */
+#define NUM_COPY_BUFFERS	NUM_BANKS_MAX
+#define NUM_FTL_BUFFERS		NUM_BANKS
+#define NUM_HIL_BUFFERS		1
+#define NUM_TEMP_BUFFERS	1
+
+#define DRAM_BYTES_OTHER	((NUM_COPY_BUFFERS + NUM_FTL_BUFFERS + NUM_HIL_BUFFERS + NUM_TEMP_BUFFERS) * BYTES_PER_PAGE \
++ BAD_BLK_BMP_BYTES + VCOUNT_BYTES)
+
+#define NUM_RW_BUFFERS		((DRAM_SIZE - DRAM_BYTES_OTHER) / BYTES_PER_PAGE - 1)
+#define NUM_RD_BUFFERS		(((NUM_RW_BUFFERS / 8) + NUM_BANKS - 1) / NUM_BANKS * NUM_BANKS)
+#define NUM_WR_BUFFERS		(NUM_RW_BUFFERS - NUM_RD_BUFFERS)
 
 #define RD_BUF_ADDR		DRAM_BASE 
 #define RD_BUF_BYTES            (NUM_RD_BUFFERS * BYTES_PER_PAGE)
@@ -27,15 +41,11 @@
 #define TEMP_BUF_BYTES          (NUM_TEMP_BUFFERS * BYTES_PER_PAGE)
 
 // bitmap of initial bad blocks
-#define BAD_BLK_BMP_ADDR        (TEMP_BUF_ADDR + TEMP_BUF_BYTES)                           
-#define BAD_BLK_BMP_BYTES       (((NUM_VBLKS / 8) + DRAM_ECC_UNIT - 1) / DRAM_ECC_UNIT * DRAM_ECC_UNIT)
+#define BAD_BLK_BMP_ADDR        (TEMP_BUF_ADDR + TEMP_BUF_BYTES)
+#define BAD_BLK_BMP_BYTES	(COUNT_BUCKETS(NUM_VBLKS / 8, DRAM_ECC_UNIT) * DRAM_ECC_UNIT)
 
-// page mapping table
-#define PAGE_MAP_ADDR           (BAD_BLK_BMP_ADDR + BAD_BLK_BMP_BYTES)
-#define PAGE_MAP_BYTES          ((NUM_LPAGES * sizeof(UINT32) + BYTES_PER_SECTOR - 1) / BYTES_PER_SECTOR * BYTES_PER_SECTOR)
-
-#define VCOUNT_ADDR                     (PAGE_MAP_ADDR + PAGE_MAP_BYTES)
-#define VCOUNT_BYTES            ((NUM_BANKS * VBLKS_PER_BANK * sizeof(UINT32) + BYTES_PER_SECTOR - 1) / BYTES_PER_SECTOR * BYTES_PER_SECTOR)
+#define VCOUNT_ADDR             (BAD_BLK_BMP_ADDR + BAD_BLK_BMP_BYTES)
+#define VCOUNT_BYTES            (COUNT_BUCKETS(NUM_VBLKS, BYTES_PER_SECTOR) * BYTES_PER_SECTOR)
 
 /* ========================================================================= *
  * Public API 
