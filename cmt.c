@@ -6,8 +6,6 @@
  * CMT is based on hash table 
  * ========================================================================*/
 
-#define CMT_ENTRIES		4
-
 /* CMT is implemented as a hash_table */
 #define CMT_HT_CAPACITY		CMT_ENTRIES
 #define CMT_HT_BUFFER_SIZE	CMT_ENTRIES * sizeof(cmt_node)
@@ -125,7 +123,7 @@ void segment_accept(cmt_node *node)
 	BUG_ON("probationary segment is full", 
 			segment_is_full(_cmt_probationary_seg));
 	BUG_ON("node has protect flag set", is_protected(node));
-	BUG_ON("node has siblings", !node->next || !node->pre);
+	BUG_ON("node has siblings", node->next || node->pre);
 
 	segment_insert(&_cmt_probationary_seg.head, node);
 	_cmt_probationary_seg.size++;
@@ -157,7 +155,7 @@ void cmt_init(void)
 	segment_init(&_cmt_probationary_seg);
 }
 
-BOOL32 cmt_visit(UINT32 const lpn, UINT32 *vpn) 
+BOOL32 cmt_get(UINT32 const lpn, UINT32 *vpn) 
 {
 	cmt_node* node = (cmt_node*) hash_table_get_node(&_cmt_ht, lpn);
 	if (!node) return 1;
@@ -178,13 +176,17 @@ BOOL32 cmt_visit(UINT32 const lpn, UINT32 *vpn)
 
 BOOL32 cmt_is_full() 
 {
-	return hash_table_is_full(&_cmt_ht);
+	return segment_is_full(_cmt_probationary_seg);
 }
 
 BOOL32 cmt_add(UINT32 const lpn, UINT32 const vpn)
 {
 	cmt_node* node;
-	BOOL32 res = hash_table_insert(&_cmt_ht, lpn, vpn);
+	BOOL32 res;
+
+	if (cmt_is_full()) return 1;
+	
+	res = hash_table_insert(&_cmt_ht, lpn, vpn);
 
 	if (res) return 1;
 
@@ -208,7 +210,7 @@ BOOL32 cmt_update(UINT32 const lpn, UINT32 const new_vpn)
 	return 0;
 }
 
-BOOL32 cmt_evict_entry(UINT32 *lpn, UINT32 *vpn, BOOL32 *is_dirty)
+BOOL32 cmt_evict(UINT32 *lpn, UINT32 *vpn, BOOL32 *is_dirty)
 {
 	cmt_node* victim_node; 	
 	UINT32 res;
