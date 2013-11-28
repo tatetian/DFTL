@@ -95,4 +95,6 @@ typedef struct {
 #define flash_clear_irq()
 
 #define uart_print(message)	printf("%s\n", message);
+
+#define REAL_BANK(bank)		(bank)
 #endif
